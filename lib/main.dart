@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/Formulario.dart';
 import 'practica3.dart';
 import 'practica4.dart';
 
@@ -48,6 +49,19 @@ class MainMenu extends StatelessWidget {
                 );
               },
               child: const Text('Ir a Práctica 4'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        const Formulario(), // Cambiado a Formulario
+                  ),
+                );
+              },
+              child: const Text('Formulario'),
             ),
           ],
         ),
