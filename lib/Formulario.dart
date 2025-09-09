@@ -32,10 +32,12 @@ class _FormularioState extends State<Formulario> {
 
   // Validaciones
   String? _validarNombre(String? value) {
-    if (value == null || value.trim().isEmpty)
+    if (value == null || value.trim().isEmpty) {
       return 'El nombre es obligatorio';
-    if (value.trim().length < 3)
+    }
+    if (value.trim().length < 3) {
       return 'El nombre debe tener al menos 3 caracteres';
+    }
     return null;
   }
 
@@ -53,8 +55,9 @@ class _FormularioState extends State<Formulario> {
   }
 
   String? _validarConfirmacion(String? value) {
-    if (value != _passwordController.text)
+    if (value != _passwordController.text) {
       return 'Las contraseñas no coinciden';
+    }
     return null;
   }
 
@@ -66,18 +69,29 @@ class _FormularioState extends State<Formulario> {
     if (_formKey.currentState!.validate()) {
       if (!_aceptoTerminos) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Debes aceptar los términos')),
+          SnackBar(
+            content: const Text('Debes aceptar los términos'),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
         );
         return;
       }
 
       final nombre = _nombreController.text.trim();
       final email = _emailController.text.trim();
-      final password = _passwordController.text;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Registrado: $nombre ($email) - Contraseña: $password'),
+          content: Text('Registrado: $nombre ($email)'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
     }
@@ -98,103 +112,181 @@ class _FormularioState extends State<Formulario> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Registro')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          autovalidateMode: _intentoEnviar
-              ? AutovalidateMode.onUserInteraction
-              : AutovalidateMode.disabled,
-          child: ListView(
-            children: [
-              TextFormField(
-                controller: _nombreController,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre',
-                  prefixIcon: Icon(Icons.person),
-                  border: OutlineInputBorder(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.blueAccent, Colors.lightBlueAccent],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            autovalidateMode: _intentoEnviar
+                ? AutovalidateMode.onUserInteraction
+                : AutovalidateMode.disabled,
+            child: ListView(
+              children: [
+                const SizedBox(height: 20),
+                const Text(
+                  'Formulario de Registro',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                validator: _validarNombre,
-                textInputAction: TextInputAction.next,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: Icon(Icons.email),
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 30),
+                _buildTextField(
+                  controller: _nombreController,
+                  label: 'Nombre',
+                  icon: Icons.person,
+                  validator: _validarNombre,
                 ),
-                keyboardType: TextInputType.emailAddress,
-                validator: _validarEmail,
-                textInputAction: TextInputAction.next,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _passwordController,
-                decoration: InputDecoration(
-                  labelText: 'Contraseña',
-                  prefixIcon: const Icon(Icons.lock),
-                  border: const OutlineInputBorder(),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                    onPressed: () {
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: _emailController,
+                  label: 'Email',
+                  icon: Icons.email,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: _validarEmail,
+                ),
+                const SizedBox(height: 16),
+                _buildPasswordField(
+                  controller: _passwordController,
+                  label: 'Contraseña',
+                  icon: Icons.lock,
+                  obscure: _obscurePassword,
+                  onToggle: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                  validator: _validarPassword,
+                ),
+                const SizedBox(height: 16),
+                _buildPasswordField(
+                  controller: _confirmarController,
+                  label: 'Confirmar Contraseña',
+                  icon: Icons.lock_outline,
+                  obscure: _obscureConfirm,
+                  onToggle: () {
+                    setState(() {
+                      _obscureConfirm = !_obscureConfirm;
+                    });
+                  },
+                  validator: _validarConfirmacion,
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: CheckboxListTile(
+                    value: _aceptoTerminos,
+                    onChanged: (val) {
                       setState(() {
-                        _obscurePassword = !_obscurePassword;
+                        _aceptoTerminos = val ?? false;
                       });
                     },
+                    title: const Text('Acepto términos y condiciones'),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    activeColor: Colors.blueAccent,
                   ),
                 ),
-                obscureText: _obscurePassword,
-                validator: _validarPassword,
-                textInputAction: TextInputAction.next,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _confirmarController,
-                decoration: InputDecoration(
-                  labelText: 'Confirmar Contraseña',
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  border: const OutlineInputBorder(),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureConfirm ? Icons.visibility : Icons.visibility_off,
+                const SizedBox(height: 25),
+                ElevatedButton(
+                  onPressed: _enviar,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.blueAccent,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _obscureConfirm = !_obscureConfirm;
-                      });
-                    },
+                  ),
+                  child: const Text(
+                    'Enviar',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                 ),
-                obscureText: _obscureConfirm,
-                validator: _validarConfirmacion,
-                textInputAction: TextInputAction.done,
-              ),
-              const SizedBox(height: 12),
-              CheckboxListTile(
-                value: _aceptoTerminos,
-                onChanged: (val) {
-                  setState(() {
-                    _aceptoTerminos = val ?? false;
-                  });
-                },
-                title: const Text('Acepto términos y condiciones'),
-                controlAffinity: ListTileControlAffinity.leading,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(onPressed: _enviar, child: const Text('Enviar')),
-              const SizedBox(height: 8),
-              OutlinedButton(onPressed: _limpiar, child: const Text('Limpiar')),
-            ],
+                const SizedBox(height: 12),
+                OutlinedButton(
+                  onPressed: _limpiar,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Limpiar',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required String? Function(String?) validator,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.blueAccent),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.9),
+      ),
+      keyboardType: keyboardType,
+      validator: validator,
+      textInputAction: TextInputAction.next,
+    );
+  }
+
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required bool obscure,
+    required VoidCallback onToggle,
+    required String? Function(String?) validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.blueAccent),
+        suffixIcon: IconButton(
+          icon: Icon(
+            obscure ? Icons.visibility : Icons.visibility_off,
+            color: Colors.blueAccent,
+          ),
+          onPressed: onToggle,
+        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.9),
+      ),
+      obscureText: obscure,
+      validator: validator,
+      textInputAction: TextInputAction.next,
     );
   }
 }
